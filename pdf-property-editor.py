@@ -4,14 +4,14 @@ import argparse
 import sys
 from pathlib import Path
 
-from pdfrw import PdfReader, PdfWriter
+from pdfrw import PdfReader, PdfWriter 
 
 PROPERTY_KEYWORDS = "/Keywords"
 STRATEGY_MERGE = "merge"
 STRATEGY_OVERWRITE = "overwrite"
 STRATEGIES = [STRATEGY_OVERWRITE, STRATEGY_MERGE]
 
-USER_KEYS = [
+NOTES = [
     "Ab",
     "A",
     "Bb",
@@ -28,6 +28,8 @@ USER_KEYS = [
     "G#",
 ]
 
+USER_KEYS = sorted(NOTES + list(map(lambda x: x + "m", NOTES)))
+
 ENHARMONICS = {
     "Ab": "G#/Ab",
     "G#": "G#/Ab",
@@ -38,6 +40,7 @@ ENHARMONICS = {
     "D#": "D#/Eb",
     "Eb": "D#/Eb",
 }
+ENHARMONICS.update( { n +"m" : v + "m" for n, v in ENHARMONICS.items() })
 
 
 def parseargs() -> argparse.Namespace:
@@ -77,13 +80,15 @@ def parseargs() -> argparse.Namespace:
     if not args.file.exists():
         sys.exit(f"Not a file: {args.file}")
 
-    if args.merge:
-        args.__dict__["strategy"] = STRATEGY_MERGE
-    elif args.overwrite:
-        args.__dict__["strategy"] = STRATEGY_OVERWRITE
+    if args.action == "write":
+        if "merge" in args and args.merge:
+            args.__dict__["strategy"] = STRATEGY_MERGE
+        elif "overwrite" in args and args.overwrite:
+            args.__dict__["strategy"] = STRATEGY_OVERWRITE
 
-    if args.key:
-        args.key = ENHARMONICS.get(args.key, args.key)
+        if args.key:
+            args.key = ENHARMONICS.get(args.key, args.key)
+
     return args
 
 
